@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">TESLA Time Synchronization App</string>
+    <string name="hint_ip_address">IP Address</string>
+    <string name="info_last_synchronization">Last Synchronization:</string>
+    <string name="info_delay">Delay:</string>
+    <string name="button_synchronize">Synchronize</string>
+    <string name="info_empty">-</string>
+</resources>
