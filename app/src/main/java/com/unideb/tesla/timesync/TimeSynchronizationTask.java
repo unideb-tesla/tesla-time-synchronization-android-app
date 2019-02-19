@@ -32,6 +32,7 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
 
     private Activity activity;
     private ContentResolver contentResolver;
+    private TaskRecyclerViewAdapter taskRecyclerViewAdapter;
 
     private Socket socket;
     private DataInputStream serverInputStream;
@@ -43,9 +44,10 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
     private long senderTimeStamp;
     private boolean verifies;
 
-    public TimeSynchronizationTask(Activity activity, ContentResolver contentResolver) {
+    public TimeSynchronizationTask(Activity activity, ContentResolver contentResolver, TaskRecyclerViewAdapter taskRecyclerViewAdapter) {
         this.activity = activity;
         this.contentResolver = contentResolver;
+        this.taskRecyclerViewAdapter = taskRecyclerViewAdapter;
     }
 
     @Override
@@ -124,6 +126,11 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
 
         Log.d("PROGRESS_UPDATE", values[0].getName());
         Log.d("PROGRESS_UPDATE", Boolean.toString(values[0].isSuccessful()));
+
+        String taskName = values[0].getName();
+        String taskResult = values[0].isSuccessful() ? "DONE" : "FAIL";
+
+        taskRecyclerViewAdapter.addNewTaskResult(taskName, taskResult);
 
     }
 
