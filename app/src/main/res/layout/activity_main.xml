@@ -58,10 +58,10 @@
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.446">
+        app:layout_constraintTop_toBottomOf="@+id/inputPublicKeyFileName"
+        app:layout_constraintVertical_bias="0.067">
 
         <android.support.design.widget.TextInputEditText
             android:id="@+id/inputIpAddress"
@@ -71,7 +71,7 @@
     </android.support.design.widget.TextInputLayout>
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/buttonSynchronize"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -109,4 +109,33 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/infoLastSynchronization"
         tools:text="@string/info_empty" />
+
+    <TextView
+        android:id="@+id/inputPublicKeyFileName"
+        android:layout_width="240dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="232dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:gravity="center"
+        android:text="@string/info_empty"
+        app:layout_constraintEnd_toStartOf="@+id/buttonPublicKeyFileChooser"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="@string/info_empty" />
+
+    <Button
+        android:id="@+id/buttonPublicKeyFileChooser"
+        android:layout_width="139dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="232dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:onClick="selectPublicKeyFile"
+        android:text="@string/button_public_key_file_chooser"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="@string/button_public_key_file_chooser" />
 </android.support.constraint.ConstraintLayout>

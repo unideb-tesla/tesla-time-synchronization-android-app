@@ -5,4 +5,5 @@
     <string name="info_delay">Delay:</string>
     <string name="button_synchronize">Synchronize</string>
     <string name="info_empty">-</string>
+    <string name="button_public_key_file_chooser">Select file</string>
 </resources>

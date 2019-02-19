@@ -1,8 +1,10 @@
 package com.unideb.tesla.timesync;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -12,6 +14,7 @@ import com.google.gson.Gson;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -28,6 +31,7 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
     public static final int NONCE_SIZE = 128;
 
     private Activity activity;
+    private ContentResolver contentResolver;
 
     private Socket socket;
     private DataInputStream serverInputStream;
@@ -39,8 +43,9 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
     private long senderTimeStamp;
     private boolean verifies;
 
-    public TimeSynchronizationTask(Activity activity) {
+    public TimeSynchronizationTask(Activity activity, ContentResolver contentResolver) {
         this.activity = activity;
+        this.contentResolver = contentResolver;
     }
 
     @Override
@@ -54,15 +59,17 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
         publishProgress(progress);
         if(!progress.isSuccessful()) return new TimeSynchronizationResult(false, -1, new Date());
 
+        /*
         // check key file
         progress = checkKeyFile();
         publishProgress(progress);
         if(!progress.isSuccessful()) return new TimeSynchronizationResult(false, -1, new Date());
         Toast.makeText(activity, Boolean.toString(progress.isSuccessful()), Toast.LENGTH_LONG).show();
+        */
 
         // read key file
         // TODO: maybe move it to the end of the task?
-        progress = readKey();
+        progress = readKey(params[1]);
         publishProgress(progress);
         if(!progress.isSuccessful()) return new TimeSynchronizationResult(false, -1, new Date());
 
@@ -170,10 +177,11 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
 
     }
 
-    public TimeSynchronizationProgressUnit readKey(){
+    public TimeSynchronizationProgressUnit readKey(String uriAsString){
 
         try {
-            publicKey = SdCardUtils.readFileAsBytesFromSdCard("public.key");
+            // publicKey = SdCardUtils.readFileAsBytesFromSdCard("public.key");
+            publicKey = SdCardUtils.readFileAsBytesFromUri(contentResolver, Uri.parse(uriAsString));
         } catch (IOException e) {
             return new TimeSynchronizationProgressUnit("READ_KEY", false, e);
         }
@@ -188,7 +196,8 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
         int port = extractPortFromParam(address);
 
         try {
-            socket = new Socket(ip, port);
+            socket = new Socket();
+            socket.connect(new InetSocketAddress(ip, port), 2000);
         } catch (IOException e) {
             return new TimeSynchronizationProgressUnit("CONNECT_TO_SERVER", false, e);
         }

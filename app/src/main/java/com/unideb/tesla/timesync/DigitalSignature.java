@@ -1,7 +1,5 @@
 package com.unideb.tesla.timesync;
 
-import android.util.Log;
-
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
