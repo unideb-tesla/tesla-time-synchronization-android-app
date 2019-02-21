@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -18,15 +16,22 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 
-// TODO: the weak part of this task is that we can not interrupt it
-// TODO: maybe we should figure out a different solution, or do we actually need it?
 public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizationProgressUnit, TimeSynchronizationResult> {
+
+    public static final String SUBTASK_READ_KEY = "Read bytes of the public key file";
+    public static final String SUBTASK_CONNECT_TO_SERVER = "Connect to the server";
+    public static final String SUBTASK_OPEN_IO_STREAMS = "Open I/O streams";
+    public static final String SUBTASK_GENERATE_NONCE = "Generate nonce";
+    public static final String SUBTASK_SAVE_RECEIVER_TIMESTAMP = "Save our own timestamp";
+    public static final String SUBTASK_SEND_NONCE_TO_SERVER = "Send nonce to the server";
+    public static final String SUBTASK_RECEIVE_TIMESTAMP_AND_SIGNATURE = "Receive server timestamp and nonce signature";
+    public static final String SUBTASK_VERIFY_SIGNATURE = "Verify nonce signature";
+    public static final String SUBTASK_CALCULATE_DELAY = "Calculate delay between sender and receiver";
 
     public static final int NONCE_SIZE = 128;
 
@@ -65,21 +70,7 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
         publicKeyFileName = Uri.parse(publicKeyFileUriAsString).getPath().split(":")[1];
         serverAddress = params[0];
 
-        // check sd card
-        progress = checkSdCard();
-        publishProgress(progress);
-        if(!progress.isSuccessful()) return new TimeSynchronizationResult(false, -1, new Date());
-
-        /*
-        // check key file
-        progress = checkKeyFile();
-        publishProgress(progress);
-        if(!progress.isSuccessful()) return new TimeSynchronizationResult(false, -1, new Date());
-        Toast.makeText(activity, Boolean.toString(progress.isSuccessful()), Toast.LENGTH_LONG).show();
-        */
-
         // read key file
-        // TODO: maybe move it to the end of the task?
         progress = readKey(params[1]);
         publishProgress(progress);
         if(!progress.isSuccessful()) return new TimeSynchronizationResult(false, -1, new Date());
@@ -101,7 +92,7 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
 
         // save receiver timestamp
         receiverTimestamp = System.currentTimeMillis();
-        publishProgress(new TimeSynchronizationProgressUnit("SAVE_RECEIVER_TIMESTAMP", true, null));
+        publishProgress(new TimeSynchronizationProgressUnit(SUBTASK_SAVE_RECEIVER_TIMESTAMP, true, null));
 
         // send nonce to the server
         progress = sendNonceToServer();
@@ -120,7 +111,7 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
 
         // calculate delay
         long delay = -receiverTimestamp + senderTimeStamp;
-        publishProgress(new TimeSynchronizationProgressUnit("CALCULATE_DELAY", true, null));
+        publishProgress(new TimeSynchronizationProgressUnit(SUBTASK_CALCULATE_DELAY, true, null));
 
         // close streams and connection
         closeConnection();
@@ -132,9 +123,6 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
 
     @Override
     protected void onProgressUpdate(TimeSynchronizationProgressUnit... values) {
-
-        Log.d("PROGRESS_UPDATE", values[0].getName());
-        Log.d("PROGRESS_UPDATE", Boolean.toString(values[0].isSuccessful()));
 
         String taskName = values[0].getName();
         boolean taskResult = values[0].isSuccessful();
@@ -161,7 +149,7 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
         editor.putString(MainActivity.SHARED_PREFERENCES_KEY_CONFIGURATION, gson.toJson(timeSynchronizationConfiguration));
 
         // commit changes
-        editor.commit();
+        editor.apply();
 
     }
 
@@ -173,38 +161,15 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
         return Integer.parseInt(param.split(":")[1]);
     }
 
-    public TimeSynchronizationProgressUnit checkSdCard(){
-
-        if(!SdCardUtils.isSdCardAvailable()){
-            // TODO: exception?
-            return new TimeSynchronizationProgressUnit("CHECK_SD_CARD", false, null);
-        }
-
-        return new TimeSynchronizationProgressUnit("CHECK_SD_CARD", true, null);
-
-    }
-
-    public TimeSynchronizationProgressUnit checkKeyFile(){
-
-        if(!SdCardUtils.isFileExistsOnSdCard("public.key")){
-            // TODO: exception?
-            return new TimeSynchronizationProgressUnit("CHECK_KEY_FILE", false, null);
-        }
-
-        return new TimeSynchronizationProgressUnit("CHECK_KEY_FILE", true, null);
-
-    }
-
     public TimeSynchronizationProgressUnit readKey(String uriAsString){
 
         try {
-            // publicKey = SdCardUtils.readFileAsBytesFromSdCard("public.key");
-            publicKey = SdCardUtils.readFileAsBytesFromUri(contentResolver, Uri.parse(uriAsString));
+            publicKey = FileUtils.readFileAsBytesFromUri(contentResolver, Uri.parse(uriAsString));
         } catch (IOException e) {
-            return new TimeSynchronizationProgressUnit("READ_KEY", false, e);
+            return new TimeSynchronizationProgressUnit(SUBTASK_READ_KEY, false, e);
         }
 
-        return new TimeSynchronizationProgressUnit("READ_KEY", true, null);
+        return new TimeSynchronizationProgressUnit(SUBTASK_READ_KEY, true, null);
 
     }
 
@@ -217,10 +182,10 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
             socket = new Socket();
             socket.connect(new InetSocketAddress(ip, port), 2000);
         } catch (IOException e) {
-            return new TimeSynchronizationProgressUnit("CONNECT_TO_SERVER", false, e);
+            return new TimeSynchronizationProgressUnit(SUBTASK_CONNECT_TO_SERVER, false, e);
         }
 
-        return new TimeSynchronizationProgressUnit("CONNECT_TO_SERVER", true, null);
+        return new TimeSynchronizationProgressUnit(SUBTASK_CONNECT_TO_SERVER, true, null);
 
     }
 
@@ -230,10 +195,10 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
             serverInputStream = new DataInputStream(socket.getInputStream());
             serverOutputStream = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            return new TimeSynchronizationProgressUnit("OPEN_IO_STREAMS", false, e);
+            return new TimeSynchronizationProgressUnit(SUBTASK_OPEN_IO_STREAMS, false, e);
         }
 
-        return new TimeSynchronizationProgressUnit("OPEN_IO_STREAMS", true, null);
+        return new TimeSynchronizationProgressUnit(SUBTASK_OPEN_IO_STREAMS, true, null);
 
     }
 
@@ -243,7 +208,7 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
         nonce = new byte[NONCE_SIZE];
         secureRandom.nextBytes(nonce);
 
-        return new TimeSynchronizationProgressUnit("GENERATE_NONCE", true, null);
+        return new TimeSynchronizationProgressUnit(SUBTASK_GENERATE_NONCE, true, null);
 
     }
 
@@ -253,10 +218,10 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
             serverOutputStream.writeInt(NONCE_SIZE);
             serverOutputStream.write(nonce);
         } catch (IOException e) {
-            return new TimeSynchronizationProgressUnit("SEND_NONCE_TO_SERVER", false, e);
+            return new TimeSynchronizationProgressUnit(SUBTASK_SEND_NONCE_TO_SERVER, false, e);
         }
 
-        return new TimeSynchronizationProgressUnit("SEND_NONCE_TO_SERVER", true, null);
+        return new TimeSynchronizationProgressUnit(SUBTASK_SEND_NONCE_TO_SERVER, true, null);
 
     }
 
@@ -271,10 +236,10 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
             serverInputStream.read(nonceSignature, 0, nonceSignatureSize);
 
         } catch (IOException e) {
-            return new TimeSynchronizationProgressUnit("RECEIVE_TIMESTAMP_AND_SIGNATURE", false, e);
+            return new TimeSynchronizationProgressUnit(SUBTASK_RECEIVE_TIMESTAMP_AND_SIGNATURE, false, e);
         }
 
-        return new TimeSynchronizationProgressUnit("RECEIVE_TIMESTAMP_AND_SIGNATURE", true, null);
+        return new TimeSynchronizationProgressUnit(SUBTASK_RECEIVE_TIMESTAMP_AND_SIGNATURE, true, null);
 
     }
 
@@ -283,21 +248,20 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
         try {
             verifies = DigitalSignature.verify(nonce, nonceSignature, publicKey);
         } catch (NoSuchAlgorithmException e) {
-            return new TimeSynchronizationProgressUnit("VERIFY_SIGNATURE", false, e);
+            return new TimeSynchronizationProgressUnit(SUBTASK_VERIFY_SIGNATURE, false, e);
         } catch (InvalidKeyException e) {
-            return new TimeSynchronizationProgressUnit("VERIFY_SIGNATURE", false, e);
+            return new TimeSynchronizationProgressUnit(SUBTASK_VERIFY_SIGNATURE, false, e);
         } catch (InvalidKeySpecException e) {
-            return new TimeSynchronizationProgressUnit("VERIFY_SIGNATURE", false, e);
+            return new TimeSynchronizationProgressUnit(SUBTASK_VERIFY_SIGNATURE, false, e);
         } catch (SignatureException e) {
-            return new TimeSynchronizationProgressUnit("VERIFY_SIGNATURE", false, e);
+            return new TimeSynchronizationProgressUnit(SUBTASK_VERIFY_SIGNATURE, false, e);
         }
 
         if(!verifies){
-            // TODO
-            return new TimeSynchronizationProgressUnit("VERIFY_SIGNATURE", false, null);
+            return new TimeSynchronizationProgressUnit(SUBTASK_VERIFY_SIGNATURE, false, null);
         }
 
-        return new TimeSynchronizationProgressUnit("VERIFY_SIGNATURE", true, null);
+        return new TimeSynchronizationProgressUnit(SUBTASK_VERIFY_SIGNATURE, true, null);
 
     }
 
