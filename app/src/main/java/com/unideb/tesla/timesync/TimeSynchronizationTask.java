@@ -44,6 +44,10 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
     private long senderTimeStamp;
     private boolean verifies;
 
+    private String publicKeyFileUriAsString;
+    private String publicKeyFileName;
+    private String serverAddress;
+
     public TimeSynchronizationTask(Activity activity, ContentResolver contentResolver, TaskRecyclerViewAdapter taskRecyclerViewAdapter) {
         this.activity = activity;
         this.contentResolver = contentResolver;
@@ -55,6 +59,11 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
 
         // reusable progress
         TimeSynchronizationProgressUnit progress;
+
+        // save some data
+        publicKeyFileUriAsString = params[1];
+        publicKeyFileName = Uri.parse(publicKeyFileUriAsString).getPath().split(":")[1];
+        serverAddress = params[0];
 
         // check sd card
         progress = checkSdCard();
@@ -97,17 +106,17 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
         // send nonce to the server
         progress = sendNonceToServer();
         publishProgress(progress);
-        if(!progress.isSuccessful()) return null;
+        if(!progress.isSuccessful()) return new TimeSynchronizationResult(false, -1, new Date());
 
         // receive timestamp and signature
         progress = receiveTimestampAndSignature();
         publishProgress(progress);
-        if(!progress.isSuccessful()) return null;
+        if(!progress.isSuccessful()) return new TimeSynchronizationResult(false, -1, new Date());
 
         // verify signature
         progress = verifySignature();
         publishProgress(progress);
-        if(!progress.isSuccessful()) return null;
+        if(!progress.isSuccessful()) return new TimeSynchronizationResult(false, -1, new Date());
 
         // calculate delay
         long delay = -receiverTimestamp + senderTimeStamp;
@@ -141,16 +150,18 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
         SharedPreferences sharedPreferences = activity.getSharedPreferences("timesync", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        // convert result to JSON and store it
+        // create Gson object for serialization
         Gson gson = new Gson();
-        String resultAsJson = gson.toJson(timeSynchronizationResult);
-        editor.putString("TIME_SYNCHRONIZATION_RESULT", resultAsJson);
-        boolean done = editor.commit();
-        if(done){
-            Log.d("EDITOR", "SAVED SUCCESSFULLY!");
-        }else{
-            Log.d("EDITOR", "COULDN'T SAVE!!!");
-        }
+
+        // save result
+        editor.putString("TIME_SYNCHRONIZATION_RESULT", gson.toJson(timeSynchronizationResult));
+
+        // save configuration
+        TimeSynchronizationConfiguration timeSynchronizationConfiguration = new TimeSynchronizationConfiguration(publicKeyFileUriAsString, publicKeyFileName, serverAddress);
+        editor.putString("TIME_SYNCHRONIZATION_CONFIGURATION", gson.toJson(timeSynchronizationConfiguration));
+
+        // commit changes
+        editor.commit();
 
     }
 

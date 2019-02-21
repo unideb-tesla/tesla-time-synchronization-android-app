@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView infoLastSynchronization;
     private TextView infoDelay;
     private TextView inputPublicKeyFileName;
+    private TextView infoSuccessfulSynchronization;
 
     private Pattern pattern;
     private Matcher matcher;
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         infoLastSynchronization = findViewById(R.id.infoLastSynchronization);
         infoDelay = findViewById(R.id.infoDelay);
         inputPublicKeyFileName = findViewById(R.id.inputPublicKeyFileName);
+        infoSuccessfulSynchronization = findViewById(R.id.infoSuccessfulSynchronization);
 
         pattern = Pattern.compile(IP_ADDRESS_PATTERN);
 
@@ -66,24 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
         super.onResume();
 
-        // refresh ui
-        SharedPreferences sharedPreferences = getSharedPreferences("timesync", Context.MODE_PRIVATE);
-
-        String resultAsJson = sharedPreferences.getString("TIME_SYNCHRONIZATION_RESULT", "");
-
-        if(!resultAsJson.isEmpty()){
-
-            Gson gson = new Gson();
-            TimeSynchronizationResult timeSynchronizationResult = gson.fromJson(resultAsJson, TimeSynchronizationResult.class);
-
-            if(timeSynchronizationResult.isSuccessful()){
-
-                infoLastSynchronization.setText(timeSynchronizationResult.getDate().toString());
-                infoDelay.setText(Long.toString(timeSynchronizationResult.getDelay()));
-
-            }
-
-        }
+        refreshUi();
 
     }
 
@@ -133,15 +118,96 @@ public class MainActivity extends AppCompatActivity {
 
         if(requestCode == REQUEST_CODE_SELECT_PUBLIC_KEY_FILE && resultCode == RESULT_OK){
 
-            publicKeyUri = data.getData();
+            // overwrite previous configuration
+            TimeSynchronizationConfiguration timeSynchronizationConfiguration = getConfiguration();
 
-            String fileName = publicKeyUri.getPath().split(":")[1];
+            String uri = data.getData().toString();
+            String fileName = Uri.parse(uri).getPath().split(":")[1];
 
-            inputPublicKeyFileName.setText(fileName);
+            timeSynchronizationConfiguration.setPublicKeyFileUriAsString(uri);
+            timeSynchronizationConfiguration.setPublicKeyFileName(fileName);
+
+            SharedPreferences sharedPreferences = getSharedPreferences("timesync", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+
+            Gson gson = new Gson();
+
+            editor.putString("TIME_SYNCHRONIZATION_CONFIGURATION", gson.toJson(timeSynchronizationConfiguration));
+
+            editor.commit();
 
         }else{
             Toast.makeText(this, "Something went wrong :(", Toast.LENGTH_SHORT).show();
         }
 
     }
+
+    private TimeSynchronizationResult getResult(){
+
+        SharedPreferences sharedPreferences = getSharedPreferences("timesync", Context.MODE_PRIVATE);
+
+        String resultAsJson = sharedPreferences.getString("TIME_SYNCHRONIZATION_RESULT", "");
+
+        if(!resultAsJson.isEmpty()){
+
+            Gson gson = new Gson();
+            TimeSynchronizationResult timeSynchronizationResult = gson.fromJson(resultAsJson, TimeSynchronizationResult.class);
+
+            return timeSynchronizationResult;
+
+        }
+
+        return null;
+
+    }
+
+    private TimeSynchronizationConfiguration getConfiguration(){
+
+        // refresh ui
+        SharedPreferences sharedPreferences = getSharedPreferences("timesync", Context.MODE_PRIVATE);
+
+        String resultAsJson = sharedPreferences.getString("TIME_SYNCHRONIZATION_CONFIGURATION", "");
+
+        if(!resultAsJson.isEmpty()){
+
+            Log.d("WHAT", resultAsJson);
+
+            Gson gson = new Gson();
+            TimeSynchronizationConfiguration timeSynchronizationConfiguration = gson.fromJson(resultAsJson, TimeSynchronizationConfiguration.class);
+
+            return timeSynchronizationConfiguration;
+
+        }
+
+        return null;
+
+    }
+
+    private void refreshUi(){
+
+        // load objects
+        TimeSynchronizationConfiguration timeSynchronizationConfiguration = getConfiguration();
+        TimeSynchronizationResult timeSynchronizationResult = getResult();
+
+        // refresh configuration parts
+        if(timeSynchronizationConfiguration != null){
+
+            publicKeyUri = Uri.parse(timeSynchronizationConfiguration.getPublicKeyFileUriAsString());
+
+            inputPublicKeyFileName.setText(timeSynchronizationConfiguration.getPublicKeyFileName());
+            inputIpAddress.setText(timeSynchronizationConfiguration.getServerAddress());
+
+        }
+
+        // refresh result parts
+        if(timeSynchronizationResult != null){
+
+            infoLastSynchronization.setText(timeSynchronizationResult.getDate().toString());
+            infoDelay.setText(Long.toString(timeSynchronizationResult.getDelay()));
+            infoSuccessfulSynchronization.setText(Boolean.toString(timeSynchronizationResult.isSuccessful()));
+
+        }
+
+    }
+
 }

@@ -8,4 +8,5 @@
     <string name="button_public_key_file_chooser">Select file</string>
     <string name="dummy_task_name">Task name</string>
     <string name="dummy_task_result">Task result</string>
+    <string name="info_successful">Successful synchronization:</string>
 </resources>
