@@ -1,4 +1,4 @@
-package com.unideb.tesla.timesync;
+package com.unideb.tesla.timesync.crypto;
 
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;

@@ -1,4 +1,4 @@
-package com.unideb.tesla.timesync;
+package com.unideb.tesla.timesync.activities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +13,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.unideb.tesla.timesync.R;
+import com.unideb.tesla.timesync.dto.TimeSynchronizationConfiguration;
+import com.unideb.tesla.timesync.dto.TimeSynchronizationResult;
+import com.unideb.tesla.timesync.utils.ValidationUtils;
 
 public class MainActivity extends AppCompatActivity {
 

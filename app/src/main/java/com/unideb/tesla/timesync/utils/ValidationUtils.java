@@ -1,4 +1,4 @@
-package com.unideb.tesla.timesync;
+package com.unideb.tesla.timesync.utils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

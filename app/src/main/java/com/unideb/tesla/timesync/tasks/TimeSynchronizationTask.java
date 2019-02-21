@@ -1,4 +1,4 @@
-package com.unideb.tesla.timesync;
+package com.unideb.tesla.timesync.tasks;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -8,6 +8,13 @@ import android.net.Uri;
 import android.os.AsyncTask;
 
 import com.google.gson.Gson;
+import com.unideb.tesla.timesync.crypto.DigitalSignature;
+import com.unideb.tesla.timesync.activities.MainActivity;
+import com.unideb.tesla.timesync.adapters.TaskRecyclerViewAdapter;
+import com.unideb.tesla.timesync.dto.TimeSynchronizationConfiguration;
+import com.unideb.tesla.timesync.dto.TimeSynchronizationProgressUnit;
+import com.unideb.tesla.timesync.dto.TimeSynchronizationResult;
+import com.unideb.tesla.timesync.utils.FileUtils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

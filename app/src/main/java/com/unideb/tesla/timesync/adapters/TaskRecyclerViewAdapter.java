@@ -1,4 +1,4 @@
-package com.unideb.tesla.timesync;
+package com.unideb.tesla.timesync.adapters;
 
 import android.content.Context;
 import android.os.Build;
@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.unideb.tesla.timesync.R;
 
 import java.util.ArrayList;
 

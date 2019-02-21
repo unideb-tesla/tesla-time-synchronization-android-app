@@ -1,4 +1,4 @@
-package com.unideb.tesla.timesync;
+package com.unideb.tesla.timesync.utils;
 
 import android.content.ContentResolver;
 import android.net.Uri;
