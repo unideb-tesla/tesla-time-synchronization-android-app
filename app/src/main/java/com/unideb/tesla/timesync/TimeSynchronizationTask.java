@@ -147,18 +147,18 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
     protected void onPostExecute(TimeSynchronizationResult timeSynchronizationResult) {
 
         // get shared preferences editor
-        SharedPreferences sharedPreferences = activity.getSharedPreferences("timesync", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = activity.getSharedPreferences(MainActivity.SHARED_PREFERENCES_FILE_NAME_TIMESYNC, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         // create Gson object for serialization
         Gson gson = new Gson();
 
         // save result
-        editor.putString("TIME_SYNCHRONIZATION_RESULT", gson.toJson(timeSynchronizationResult));
+        editor.putString(MainActivity.SHARED_PREFERENCES_KEY_RESULT, gson.toJson(timeSynchronizationResult));
 
         // save configuration
         TimeSynchronizationConfiguration timeSynchronizationConfiguration = new TimeSynchronizationConfiguration(publicKeyFileUriAsString, publicKeyFileName, serverAddress);
-        editor.putString("TIME_SYNCHRONIZATION_CONFIGURATION", gson.toJson(timeSynchronizationConfiguration));
+        editor.putString(MainActivity.SHARED_PREFERENCES_KEY_CONFIGURATION, gson.toJson(timeSynchronizationConfiguration));
 
         // commit changes
         editor.commit();
@@ -289,8 +289,6 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
         } catch (InvalidKeySpecException e) {
             return new TimeSynchronizationProgressUnit("VERIFY_SIGNATURE", false, e);
         } catch (SignatureException e) {
-            return new TimeSynchronizationProgressUnit("VERIFY_SIGNATURE", false, e);
-        } catch (NoSuchProviderException e) {
             return new TimeSynchronizationProgressUnit("VERIFY_SIGNATURE", false, e);
         }
 

@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,6 +15,10 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static final String SHARED_PREFERENCES_FILE_NAME_TIMESYNC = "timesync";
+    public static final String SHARED_PREFERENCES_KEY_RESULT = "TIME_SYNCHRONIZATION_RESULT";
+    public static final String SHARED_PREFERENCES_KEY_CONFIGURATION = "TIME_SYNCHRONIZATION_CONFIGURATION";
 
     public static final String EXTRA_IP_ADDRESS = "com.unideb.tesla.timesync.IP_ADDRESS";
     public static final String EXTRA_PUBLIC_KEY_URI_AS_STRING = "com.unideb.tesla.timesync.PUBLIC_KEY_URI_AS_STRING";
@@ -100,12 +103,12 @@ public class MainActivity extends AppCompatActivity {
             timeSynchronizationConfiguration.setPublicKeyFileUriAsString(uri);
             timeSynchronizationConfiguration.setPublicKeyFileName(fileName);
 
-            SharedPreferences sharedPreferences = getSharedPreferences("timesync", Context.MODE_PRIVATE);
+            SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_FILE_NAME_TIMESYNC, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
 
             Gson gson = new Gson();
 
-            editor.putString("TIME_SYNCHRONIZATION_CONFIGURATION", gson.toJson(timeSynchronizationConfiguration));
+            editor.putString(SHARED_PREFERENCES_KEY_CONFIGURATION, gson.toJson(timeSynchronizationConfiguration));
 
             editor.commit();
 
@@ -117,9 +120,9 @@ public class MainActivity extends AppCompatActivity {
 
     private TimeSynchronizationResult getResult(){
 
-        SharedPreferences sharedPreferences = getSharedPreferences("timesync", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_FILE_NAME_TIMESYNC, Context.MODE_PRIVATE);
 
-        String resultAsJson = sharedPreferences.getString("TIME_SYNCHRONIZATION_RESULT", "");
+        String resultAsJson = sharedPreferences.getString(SHARED_PREFERENCES_KEY_RESULT, "");
 
         if(!resultAsJson.isEmpty()){
 
@@ -137,13 +140,11 @@ public class MainActivity extends AppCompatActivity {
     private TimeSynchronizationConfiguration getConfiguration(){
 
         // refresh ui
-        SharedPreferences sharedPreferences = getSharedPreferences("timesync", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_FILE_NAME_TIMESYNC, Context.MODE_PRIVATE);
 
-        String resultAsJson = sharedPreferences.getString("TIME_SYNCHRONIZATION_CONFIGURATION", "");
+        String resultAsJson = sharedPreferences.getString(SHARED_PREFERENCES_KEY_CONFIGURATION, "");
 
         if(!resultAsJson.isEmpty()){
-
-            Log.d("WHAT", resultAsJson);
 
             Gson gson = new Gson();
             TimeSynchronizationConfiguration timeSynchronizationConfiguration = gson.fromJson(resultAsJson, TimeSynchronizationConfiguration.class);
