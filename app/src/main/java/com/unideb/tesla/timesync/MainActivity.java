@@ -1,16 +1,11 @@
 package com.unideb.tesla.timesync;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,9 +15,6 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class MainActivity extends AppCompatActivity {
 
     public static final String EXTRA_IP_ADDRESS = "com.unideb.tesla.timesync.IP_ADDRESS";
@@ -30,21 +22,12 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int REQUEST_CODE_SELECT_PUBLIC_KEY_FILE = 11;
 
-    public static final String IP_ADDRESS_PATTERN =
-            "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-            "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-            "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-            "([01]?\\d\\d?|2[0-4]\\d|25[0-5]):" +
-            "\\d{1,5}$";
-
     private TextInputEditText inputIpAddress;
     private TextView infoLastSynchronization;
     private TextView infoDelay;
     private TextView inputPublicKeyFileName;
     private TextView infoSuccessfulSynchronization;
 
-    private Pattern pattern;
-    private Matcher matcher;
     private Uri publicKeyUri;
 
     @Override
@@ -58,8 +41,6 @@ public class MainActivity extends AppCompatActivity {
         infoDelay = findViewById(R.id.infoDelay);
         inputPublicKeyFileName = findViewById(R.id.inputPublicKeyFileName);
         infoSuccessfulSynchronization = findViewById(R.id.infoSuccessfulSynchronization);
-
-        pattern = Pattern.compile(IP_ADDRESS_PATTERN);
 
     }
 
@@ -78,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         String ipAddress = inputIpAddress.getText().toString().trim();
 
         // validate ip address
-        if(!validateIpAddress(ipAddress)){
+        if(!ValidationUtils.validateIpAddress(ipAddress)){
             Toast.makeText(this, "Invalid address!", Toast.LENGTH_LONG).show();
             return;
         }
@@ -93,14 +74,6 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(EXTRA_IP_ADDRESS, ipAddress);
         intent.putExtra(EXTRA_PUBLIC_KEY_URI_AS_STRING, publicKeyUri.toString());
         startActivity(intent);
-
-    }
-
-    public boolean validateIpAddress(String ipAddress){
-
-        matcher = pattern.matcher(ipAddress);
-
-        return matcher.matches();
 
     }
 
