@@ -137,7 +137,7 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
         Log.d("PROGRESS_UPDATE", Boolean.toString(values[0].isSuccessful()));
 
         String taskName = values[0].getName();
-        String taskResult = values[0].isSuccessful() ? "DONE" : "FAIL";
+        boolean taskResult = values[0].isSuccessful();
 
         taskRecyclerViewAdapter.addNewTaskResult(taskName, taskResult);
 

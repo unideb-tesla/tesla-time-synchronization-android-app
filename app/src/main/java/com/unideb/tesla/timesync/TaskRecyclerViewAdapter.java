@@ -1,10 +1,13 @@
 package com.unideb.tesla.timesync;
 
+import android.content.Context;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -13,11 +16,13 @@ import java.util.ArrayList;
 public class TaskRecyclerViewAdapter extends RecyclerView.Adapter<TaskRecyclerViewAdapter.ViewHolder> {
 
     private ArrayList<String> taskNames;
-    private ArrayList<String> taskResults;
+    private ArrayList<Boolean> taskResults;
+    private Context context;
 
-    public TaskRecyclerViewAdapter() {
+    public TaskRecyclerViewAdapter(Context context) {
         taskNames = new ArrayList<>();
         taskResults = new ArrayList<>();
+        this.context = context;
     }
 
     @NonNull
@@ -36,7 +41,16 @@ public class TaskRecyclerViewAdapter extends RecyclerView.Adapter<TaskRecyclerVi
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
 
         viewHolder.taskName.setText(taskNames.get(i));
-        viewHolder.taskResult.setText(taskResults.get(i));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            if(taskResults.get(i)) {
+                viewHolder.taskResultImage.setImageDrawable(context.getDrawable(R.drawable.ic_check_green_24dp));
+            }else{
+                viewHolder.taskResultImage.setImageDrawable(context.getDrawable(R.drawable.ic_close_red_24dp));
+            }
+
+        }
 
     }
 
@@ -49,7 +63,7 @@ public class TaskRecyclerViewAdapter extends RecyclerView.Adapter<TaskRecyclerVi
 
         RelativeLayout taskListitemParentLayout;
         TextView taskName;
-        TextView taskResult;
+        ImageView taskResultImage;
 
         public ViewHolder(@NonNull View itemView) {
 
@@ -57,13 +71,13 @@ public class TaskRecyclerViewAdapter extends RecyclerView.Adapter<TaskRecyclerVi
 
             taskListitemParentLayout = itemView.findViewById(R.id.taskListitemParentLayout);
             taskName = itemView.findViewById(R.id.taskName);
-            taskResult = itemView.findViewById(R.id.taskResult);
+            taskResultImage = itemView.findViewById(R.id.taskResultImage);
 
         }
 
     }
 
-    public void addNewTaskResult(String taskName, String taskResult){
+    public void addNewTaskResult(String taskName, boolean taskResult){
 
         taskNames.add(taskName);
         taskResults.add(taskResult);

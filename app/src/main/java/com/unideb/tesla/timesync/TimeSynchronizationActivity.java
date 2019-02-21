@@ -37,7 +37,7 @@ public class TimeSynchronizationActivity extends AppCompatActivity {
 
         // temporary RecyclerView test
         RecyclerView recyclerView = findViewById(R.id.recyclerViewTasks);
-        TaskRecyclerViewAdapter adapter = new TaskRecyclerViewAdapter();
+        TaskRecyclerViewAdapter adapter = new TaskRecyclerViewAdapter(this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
