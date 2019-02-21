@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -100,6 +101,10 @@ public class MainActivity extends AppCompatActivity {
 
             // overwrite previous configuration
             TimeSynchronizationConfiguration timeSynchronizationConfiguration = getConfiguration();
+
+            if(timeSynchronizationConfiguration == null){
+                timeSynchronizationConfiguration = new TimeSynchronizationConfiguration("", "", "");
+            }
 
             String uri = data.getData().toString();
             String fileName = Uri.parse(uri).getPath().split(":")[1];
