@@ -3,6 +3,7 @@ package com.unideb.tesla.timesync.tasks;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -157,6 +158,12 @@ public class TimeSynchronizationTask extends AsyncTask<String, TimeSynchronizati
 
         // commit changes
         editor.apply();
+
+        // broadcast delay
+        Intent intent = new Intent();
+        intent.setAction("com.unideb.tesla.timesync.TIME_SYNCHRONIZATION_DELAY");
+        intent.putExtra("time_synchronization_delay", timeSynchronizationResult.getDelay());
+        activity.sendBroadcast(intent);
 
     }
 
