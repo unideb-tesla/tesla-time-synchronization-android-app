@@ -37,5 +37,4 @@ public class TimeSynchronizationResult {
     public void setDate(Date date) {
         this.date = date;
     }
-
 }

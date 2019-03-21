@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,6 +17,9 @@ import com.unideb.tesla.timesync.R;
 import com.unideb.tesla.timesync.dto.TimeSynchronizationConfiguration;
 import com.unideb.tesla.timesync.dto.TimeSynchronizationResult;
 import com.unideb.tesla.timesync.utils.ValidationUtils;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -185,7 +187,8 @@ public class MainActivity extends AppCompatActivity {
         // refresh result parts
         if(timeSynchronizationResult != null){
 
-            infoLastSynchronization.setText(timeSynchronizationResult.getDate().toString());
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            infoLastSynchronization.setText(dateFormat.format(timeSynchronizationResult.getDate()));
             infoDelay.setText(Long.toString(timeSynchronizationResult.getDelay()));
             infoSuccessfulSynchronization.setText(Boolean.toString(timeSynchronizationResult.isSuccessful()));
 
